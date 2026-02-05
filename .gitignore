@@ -1,0 +1,5 @@
+.env
+peec_awin_workspace/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
