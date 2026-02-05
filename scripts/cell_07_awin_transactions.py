@@ -102,7 +102,7 @@ def process_awin_transactions(raw):
             "Advertiser ID": tx.get("advertiserId"),
             "Advertiser Name": tx.get("advertiserName"),
             "Publisher ID": tx.get("publisherId"),
-            "Publisher Name": tx.get("publisherName"),
+            "Publisher Name": tx.get("siteName", ""),
             "Publisher URL": tx.get("publisherUrl", ""),
             "Click Ref": tx.get("clickRef", ""),
             "Order Ref": tx.get("orderRef", ""),
@@ -165,85 +165,51 @@ tx_dl_btn = widgets.Button(
     layout=widgets.Layout(width="160px", height="36px"),
 )
 tx_stats = widgets.HTML("")
-tx_output = widgets.Output()
+tx_status_msg = widgets.HTML("")
 
 
 def on_tx_pull(b):
     global df_awin_tx
-    with tx_output:
-        tx_output.clear_output()
-        tx_stats.value = ""
-        sd = SESSION_START_DATE
-        ed = SESSION_END_DATE
-        adv = ADVERTISER_ID
-        status = None if tx_status.value == "All" else tx_status.value
+    tx_stats.value = ""
+    tx_status_msg.value = "\u23f3 Fetching transactions..."
+    sd = SESSION_START_DATE
+    ed = SESSION_END_DATE
+    adv = ADVERTISER_ID
+    status = None if tx_status.value == "All" else tx_status.value
 
-        print(f"\u23f3 Fetching transactions for advertiser {adv}...")
-        try:
-            raw = fetch_awin_transactions(adv, sd, ed, status=status)
-            df = process_awin_transactions(raw)
+    try:
+        raw = fetch_awin_transactions(adv, sd, ed, status=status)
+        df = process_awin_transactions(raw)
 
-            if df.empty:
-                print("\u26a0\ufe0f No transactions returned.")
-                return
+        if df.empty:
+            tx_status_msg.value = "\u26a0\ufe0f No transactions returned."
+            return
 
-            df_awin_tx = df
-            __main__.df_awin_tx = df_awin_tx
-            df.to_csv(AWIN_TX_CSV, index=False)
+        df_awin_tx = df
+        __main__.df_awin_tx = df_awin_tx
+        df.to_csv(AWIN_TX_CSV, index=False)
 
-            tx_output.clear_output()
+        total_rev = df["Sale Amount"].sum()
+        total_comm = df["Commission Amount"].sum()
+        unique_pubs = df["Publisher ID"].nunique()
+        unique_domains = df["Publisher Domain"].replace("", pd.NA).dropna().nunique()
 
-            total_rev = df["Sale Amount"].sum()
-            total_comm = df["Commission Amount"].sum()
-            unique_pubs = df["Publisher ID"].nunique()
-            unique_domains = df["Publisher Domain"].replace("", pd.NA).dropna().nunique()
+        tx_stats.value = (
+            f'<div>'
+            f'<span class="peec-stat">\U0001f4dd Transactions: <b>{len(df):,}</b></span>'
+            f'<span class="peec-stat">\U0001f465 Publishers: <b>{unique_pubs:,}</b></span>'
+            f'<span class="peec-stat">\U0001f310 Unique Pub Domains: <b>{unique_domains:,}</b></span>'
+            f'<span class="peec-stat">\U0001f4b0 Revenue: <b>\u00a3{total_rev:,.2f}</b></span>'
+            f'<span class="peec-stat">\U0001f4b7 Commission: <b>\u00a3{total_comm:,.2f}</b></span>'
+            f'</div>'
+        )
+        tx_status_msg.value = (
+            f'\u2705 Pulled {len(df):,} transactions. '
+            f'CSV saved to output folder.'
+        )
 
-            tx_stats.value = (
-                f'<div>'
-                f'<span class="peec-stat">\U0001f4dd Transactions: <b>{len(df):,}</b></span>'
-                f'<span class="peec-stat">\U0001f465 Publishers: <b>{unique_pubs:,}</b></span>'
-                f'<span class="peec-stat">\U0001f310 Unique Pub Domains: <b>{unique_domains:,}</b></span>'
-                f'<span class="peec-stat">\U0001f4b0 Revenue: <b>\u00a3{total_rev:,.2f}</b></span>'
-                f'<span class="peec-stat">\U0001f4b7 Commission: <b>\u00a3{total_comm:,.2f}</b></span>'
-                f'</div>'
-            )
-
-            # Show publisher domain summary
-            if unique_domains > 0:
-                domain_summary = (
-                    df[df["Publisher Domain"] != ""]
-                    .groupby("Publisher Domain", as_index=False)
-                    .agg(
-                        Publisher_Name=("Publisher Name", "first"),
-                        Transactions=("Transaction ID", "count"),
-                        Revenue=("Sale Amount", "sum"),
-                        Commission=("Commission Amount", "sum"),
-                    )
-                )
-                domain_summary.columns = [
-                    "Publisher Domain", "Publisher Name", "Transactions",
-                    "Revenue", "Commission",
-                ]
-                domain_summary["Revenue"] = domain_summary["Revenue"].round(2)
-                domain_summary["Commission"] = domain_summary["Commission"].round(2)
-                domain_summary = domain_summary.sort_values(
-                    "Revenue", ascending=False,
-                ).reset_index(drop=True)
-
-                display(HTML(
-                    '<div class="peec-section" style="margin-top:12px">'
-                    "Publisher Domain Summary</div>"
-                ))
-                display(_scroll_table(domain_summary))
-
-            display(HTML(
-                '<div class="peec-section" style="margin-top:12px">'
-                "Raw Transactions</div>"
-            ))
-            display(_scroll_table(df))
-
-        except Exception as e:
-            print(f"\u274c Error: {e}")
+    except Exception as e:
+        tx_status_msg.value = f"\u274c Error: {e}"
 
 
 def on_tx_dl(b):
@@ -263,5 +229,5 @@ display(
         layout=widgets.Layout(margin="8px 0 10px 0"),
     ),
     tx_stats,
-    tx_output,
+    tx_status_msg,
 )

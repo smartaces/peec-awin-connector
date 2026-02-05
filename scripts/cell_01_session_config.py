@@ -30,9 +30,10 @@ def _load_key(secret_name, env_var, label):
     """Load an API key: Colab secrets -> .env -> env var."""
     key = None
 
-    if userdata is not None:
+    if IN_COLAB:
         try:
-            key = userdata.get(secret_name)
+            from google.colab import userdata as _ud  # type: ignore
+            key = _ud.get(secret_name)
             if key:
                 print(f"\u2705 Loaded {label} key from Colab secret '{secret_name}'.")
         except Exception as exc:
@@ -93,16 +94,17 @@ _project_dd = widgets.Dropdown(
     layout=widgets.Layout(width="450px"),
 )
 
-_adv_id = widgets.IntText(
+_adv_id = widgets.Text(
     description="Awin Advertiser ID:",
-    value=0,
+    value="",
+    placeholder="e.g. 4567",
     style={"description_width": "140px"},
     layout=widgets.Layout(width="300px"),
 )
 
 _start_picker = widgets.DatePicker(
     description="Start date:",
-    value=date.today() - timedelta(days=90),
+    value=date(2026, 1, 1),
     style={"description_width": "80px"},
     layout=widgets.Layout(width="240px"),
 )
@@ -136,10 +138,15 @@ def _on_confirm(b):
             print("\u26a0\ufe0f Start date must be before end date.")
             return
 
+        adv_text = _adv_id.value.strip()
+        if not adv_text or not adv_text.isdigit() or int(adv_text) == 0:
+            print("\u26a0\ufe0f Please enter a valid Awin Advertiser ID.")
+            return
+
         # Set globals on __main__ so all subsequent cells can access them
         __main__.SESSION_START_DATE = str(sd)
         __main__.SESSION_END_DATE = str(ed)
-        __main__.ADVERTISER_ID = _adv_id.value
+        __main__.ADVERTISER_ID = int(adv_text)
         __main__.PROJECT_ID = _project_dd.value
         __main__.PROJECT_NAME = _project_dd.label
 

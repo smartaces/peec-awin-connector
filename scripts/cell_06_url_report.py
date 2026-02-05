@@ -50,100 +50,103 @@ u_dl_btn = widgets.Button(
     layout=widgets.Layout(width="160px", height="36px"),
 )
 u_stats = widgets.HTML("")
-u_output = widgets.Output()
+u_table = widgets.HTML("")
 
 
 def _run_url_report():
     global df_url_result
-    with u_output:
-        u_output.clear_output()
-        u_stats.value = ""
+    u_stats.value = ""
+    u_table.value = ""
 
-        if df_detail is None:
-            print("\u26a0\ufe0f Pull data first.")
-            return
+    if df_detail is None:
+        u_table.value = "\u26a0\ufe0f Pull data first."
+        return
 
-        df = df_detail.copy()
+    df = df_detail.copy()
 
-        # Pre-aggregation filters
-        if u_model.value != "All":
-            df = df[df["Model"] == u_model.value]
-        pq = u_prompt_search.value.strip().lower()
-        if pq:
-            df = df[df["Prompt"].astype(str).str.lower().str.contains(pq, na=False)]
-        tq = u_title_search.value.strip().lower()
-        if tq:
-            df = df[df["Title"].astype(str).str.lower().str.contains(tq, na=False)]
-        if u_page_type.value != "All":
-            df = df[df["Page Type"] == u_page_type.value]
-        if u_domain_type.value != "All":
-            df = df[df["Domain Type"] == u_domain_type.value]
+    # Pre-aggregation filters
+    if u_model.value != "All":
+        df = df[df["Model"] == u_model.value]
+    pq = u_prompt_search.value.strip().lower()
+    if pq:
+        df = df[df["Prompt"].astype(str).str.lower().str.contains(pq, na=False)]
+    tq = u_title_search.value.strip().lower()
+    if tq:
+        df = df[df["Title"].astype(str).str.lower().str.contains(tq, na=False)]
+    if u_page_type.value != "All":
+        df = df[df["Page Type"] == u_page_type.value]
+    if u_domain_type.value != "All":
+        df = df[df["Domain Type"] == u_domain_type.value]
 
-        if df.empty:
-            u_stats.value = '<div class="peec-stat">\u26a0\ufe0f No rows match filters</div>'
-            return
+    if df.empty:
+        u_stats.value = '<div class="peec-stat">\u26a0\ufe0f No rows match filters</div>'
+        return
 
-        # Aggregate: one row per URL
-        agg = (
-            df.groupby("URL", as_index=False)
-            .agg(
-                Full_URL=("Full URL", "first"),
-                Domain=("Domain", "first"),
-                Title=("Title", "first"),
-                Page_Type=("Page Type", "first"),
-                Domain_Type=("Domain Type", "first"),
-                Avg_Citation_Pos=("citation_avg", "mean"),
-                Total_Citations=("usage_count", "sum"),
-                Models_Present=("Model", "nunique"),
-                Prompt_Count=("Prompt", "nunique"),
-            )
+    # Aggregate: one row per URL
+    agg = (
+        df.groupby("URL", as_index=False)
+        .agg(
+            Full_URL=("Full URL", "first"),
+            Domain=("Domain", "first"),
+            Title=("Title", "first"),
+            Page_Type=("Page Type", "first"),
+            Domain_Type=("Domain Type", "first"),
+            Avg_Citation_Pos=("citation_avg", "mean"),
+            Total_Citations=("usage_count", "sum"),
+            Models_Present=("Model", "nunique"),
+            Prompt_Count=("Prompt", "nunique"),
         )
-        agg.columns = [
-            "URL", "Full URL", "Domain", "Title", "Page Type",
-            "Domain Type", "Avg Citation Pos", "Total Citations",
-            "Models Present", "Prompt Count",
-        ]
-        agg["Avg Citation Pos"] = agg["Avg Citation Pos"].round(2)
+    )
+    agg.columns = [
+        "URL", "Full URL", "Domain", "Title", "Page Type",
+        "Domain Type", "Avg Citation Pos", "Total Citations",
+        "Models Present", "Prompt Count",
+    ]
+    agg["Avg Citation Pos"] = agg["Avg Citation Pos"].round(2)
 
-        # URL text filter (post-agg)
-        uq = u_url_search.value.strip().lower()
-        if uq:
-            agg = agg[agg["URL"].str.lower().str.contains(uq, na=False)]
+    # URL text filter (post-agg)
+    uq = u_url_search.value.strip().lower()
+    if uq:
+        agg = agg[agg["URL"].str.lower().str.contains(uq, na=False)]
 
-        agg = agg.sort_values("Total Citations", ascending=False).reset_index(drop=True)
+    agg = agg.sort_values("Total Citations", ascending=False).reset_index(drop=True)
 
-        # Save full data to CSV
-        csv_df = agg[["Domain", "Title", "Page Type", "Domain Type",
-                       "Avg Citation Pos", "Total Citations", "Models Present",
-                       "Prompt Count", "Full URL"]].copy()
-        df_url_result = csv_df.copy()
-        __main__.df_url_result = df_url_result
-        csv_df.to_csv(URL_CSV, index=False)
+    # Save full data to CSV
+    csv_df = agg[["Domain", "Title", "Page Type", "Domain Type",
+                   "Avg Citation Pos", "Total Citations", "Models Present",
+                   "Prompt Count", "Full URL"]].copy()
+    df_url_result = csv_df.copy()
+    __main__.df_url_result = df_url_result
+    csv_df.to_csv(URL_CSV, index=False)
 
-        u_stats.value = (
-            f'<div>'
-            f'<span class="peec-stat">\U0001f517 URLs: <b>{len(agg):,}</b></span>'
-            f'<span class="peec-stat">\U0001f310 Domains: <b>{agg["Domain"].nunique():,}</b></span>'
-            f'<span class="peec-stat">\U0001f522 Total Citations: <b>{agg["Total Citations"].sum():,.0f}</b></span>'
-            f'<span class="peec-stat">\U0001f4cd Avg Citation Pos: <b>{agg["Avg Citation Pos"].mean():.1f}</b></span>'
-            f'</div>'
-        )
+    u_stats.value = (
+        f'<div>'
+        f'<span class="peec-stat">\U0001f517 URLs: <b>{len(agg):,}</b></span>'
+        f'<span class="peec-stat">\U0001f310 Domains: <b>{agg["Domain"].nunique():,}</b></span>'
+        f'<span class="peec-stat">\U0001f522 Total Citations: <b>{agg["Total Citations"].sum():,.0f}</b></span>'
+        f'<span class="peec-stat">\U0001f4cd Avg Citation Pos: <b>{agg["Avg Citation Pos"].mean():.1f}</b></span>'
+        f'</div>'
+    )
 
-        # Build display version: clickable truncated link as last column
-        display_df = agg[["Domain", "Title", "Page Type", "Domain Type",
-                          "Avg Citation Pos", "Total Citations", "Models Present",
-                          "Prompt Count"]].copy()
+    # Build display version: clickable truncated link as last column
+    display_df = agg[["Domain", "Title", "Page Type", "Domain Type",
+                      "Avg Citation Pos", "Total Citations", "Models Present",
+                      "Prompt Count"]].copy()
 
-        def _make_link(idx):
-            full = agg.loc[idx, "Full URL"] if idx < len(agg) else ""
-            if not full:
-                return ""
-            truncated = full[:70] + "..." if len(full) > 70 else full
-            return f'<a href="{full}" target="_blank" title="{full}">{truncated}</a>'
+    def _make_link(idx):
+        full = agg.loc[idx, "Full URL"] if idx < len(agg) else ""
+        if not full:
+            return ""
+        truncated = full[:70] + "..." if len(full) > 70 else full
+        return f'<a href="{full}" target="_blank" title="{full}">{truncated}</a>'
 
-        display_df["Link"] = [_make_link(i) for i in range(len(agg))]
+    display_df["Link"] = [_make_link(i) for i in range(len(agg))]
 
-        display(_scroll_table(display_df))
+    u_table.value = (
+        '<div class="peec-scroll">'
+        + display_df.to_html(index=True, escape=False, max_cols=None, max_rows=None)
+        + "</div>"
+    )
 
 
 def _init_url_filters():
@@ -163,22 +166,13 @@ def _on_u_filter(change):
 
 def _on_u_dl(b):
     if df_url_result is None or df_url_result.empty:
-        with u_output:
-            print("\u26a0\ufe0f Run report first.")
         return
     download_file(URL_CSV)
 
 
-u_page_type.observe(_on_u_filter, names="value")
-u_domain_type.observe(_on_u_filter, names="value")
-u_model.observe(_on_u_filter, names="value")
-u_prompt_search.observe(_on_u_filter, names="value")
-u_title_search.observe(_on_u_filter, names="value")
-u_url_search.observe(_on_u_filter, names="value")
 u_dl_btn.on_click(_on_u_dl)
 
 _init_url_filters()
-_run_url_report()
 
 display(
     widgets.HTML(
@@ -191,5 +185,15 @@ display(
     u_url_search,
     u_dl_btn,
     u_stats,
-    u_output,
+    u_table,
 )
+
+_run_url_report()
+
+# Attach filter observers AFTER initial run to prevent double-trigger
+u_page_type.observe(_on_u_filter, names="value")
+u_domain_type.observe(_on_u_filter, names="value")
+u_model.observe(_on_u_filter, names="value")
+u_prompt_search.observe(_on_u_filter, names="value")
+u_title_search.observe(_on_u_filter, names="value")
+u_url_search.observe(_on_u_filter, names="value")

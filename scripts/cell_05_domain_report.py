@@ -46,74 +46,77 @@ d_dl_btn = widgets.Button(
     layout=widgets.Layout(width="160px", height="36px"),
 )
 d_stats = widgets.HTML("")
-d_output = widgets.Output()
+d_table = widgets.HTML("")
 
 
 def _run_domain_report():
     global df_domain_result
-    with d_output:
-        d_output.clear_output()
-        d_stats.value = ""
+    d_stats.value = ""
+    d_table.value = ""
 
-        if df_detail is None:
-            print("\u26a0\ufe0f Pull data first.")
-            return
+    if df_detail is None:
+        d_table.value = "\u26a0\ufe0f Pull data first."
+        return
 
-        df = df_detail.copy()
+    df = df_detail.copy()
 
-        # Pre-aggregation filters
-        if d_model.value != "All":
-            df = df[df["Model"] == d_model.value]
-        pq = d_prompt_search.value.strip().lower()
-        if pq:
-            df = df[df["Prompt"].astype(str).str.lower().str.contains(pq, na=False)]
-        if d_page_type.value != "All":
-            df = df[df["Page Type"] == d_page_type.value]
+    # Pre-aggregation filters
+    if d_model.value != "All":
+        df = df[df["Model"] == d_model.value]
+    pq = d_prompt_search.value.strip().lower()
+    if pq:
+        df = df[df["Prompt"].astype(str).str.lower().str.contains(pq, na=False)]
+    if d_page_type.value != "All":
+        df = df[df["Page Type"] == d_page_type.value]
 
-        if df.empty:
-            d_stats.value = '<div class="peec-stat">\u26a0\ufe0f No rows match filters</div>'
-            return
+    if df.empty:
+        d_stats.value = '<div class="peec-stat">\u26a0\ufe0f No rows match filters</div>'
+        return
 
-        # Aggregate
-        agg = (
-            df.groupby("Domain", as_index=False)
-            .agg(
-                Domain_Type=("Domain Type", "first"),
-                Total_Citations=("usage_count", "sum"),
-                Avg_Citation_Pos=("citation_avg", "mean"),
-                Unique_Pages=("URL", "nunique"),
-                Unique_Subdomains=("Subdomain", "nunique"),
-                Models_Present=("Model", "nunique"),
-                Prompts_Appearing_In=("Prompt", "nunique"),
-            )
+    # Aggregate
+    agg = (
+        df.groupby("Domain", as_index=False)
+        .agg(
+            Domain_Type=("Domain Type", "first"),
+            Total_Citations=("usage_count", "sum"),
+            Avg_Citation_Pos=("citation_avg", "mean"),
+            Unique_Pages=("URL", "nunique"),
+            Unique_Subdomains=("Subdomain", "nunique"),
+            Models_Present=("Model", "nunique"),
+            Prompts_Appearing_In=("Prompt", "nunique"),
         )
-        agg.columns = [
-            "Domain", "Domain Type", "Total Citations", "Avg Citation Pos",
-            "Unique Pages", "Unique Subdomains", "Models Present", "Prompts Appearing In",
-        ]
-        agg["Avg Citation Pos"] = agg["Avg Citation Pos"].round(2)
+    )
+    agg.columns = [
+        "Domain", "Domain Type", "Total Citations", "Avg Citation Pos",
+        "Unique Pages", "Unique Subdomains", "Models Present", "Prompts Appearing In",
+    ]
+    agg["Avg Citation Pos"] = agg["Avg Citation Pos"].round(2)
 
-        # Post-aggregation filters
-        if d_domain_type.value != "All":
-            agg = agg[agg["Domain Type"] == d_domain_type.value]
-        dq = d_domain_search.value.strip().lower()
-        if dq:
-            agg = agg[agg["Domain"].str.lower().str.contains(dq, na=False)]
+    # Post-aggregation filters
+    if d_domain_type.value != "All":
+        agg = agg[agg["Domain Type"] == d_domain_type.value]
+    dq = d_domain_search.value.strip().lower()
+    if dq:
+        agg = agg[agg["Domain"].str.lower().str.contains(dq, na=False)]
 
-        agg = agg.sort_values("Total Citations", ascending=False).reset_index(drop=True)
-        df_domain_result = agg
-        __main__.df_domain_result = df_domain_result
-        agg.to_csv(DOMAIN_CSV, index=False)
+    agg = agg.sort_values("Total Citations", ascending=False).reset_index(drop=True)
+    df_domain_result = agg
+    __main__.df_domain_result = df_domain_result
+    agg.to_csv(DOMAIN_CSV, index=False)
 
-        d_stats.value = (
-            f'<div>'
-            f'<span class="peec-stat">\U0001f310 Domains: <b>{len(agg):,}</b></span>'
-            f'<span class="peec-stat">\U0001f522 Total Citations: <b>{agg["Total Citations"].sum():,.0f}</b></span>'
-            f'<span class="peec-stat">\U0001f4cd Avg Citation Pos: <b>{agg["Avg Citation Pos"].mean():.1f}</b></span>'
-            f'<span class="peec-stat">\U0001f4c4 Total Unique Pages: <b>{agg["Unique Pages"].sum():,.0f}</b></span>'
-            f'</div>'
-        )
-        display(_scroll_table(agg))
+    d_stats.value = (
+        f'<div>'
+        f'<span class="peec-stat">\U0001f310 Domains: <b>{len(agg):,}</b></span>'
+        f'<span class="peec-stat">\U0001f522 Total Citations: <b>{agg["Total Citations"].sum():,.0f}</b></span>'
+        f'<span class="peec-stat">\U0001f4cd Avg Citation Pos: <b>{agg["Avg Citation Pos"].mean():.1f}</b></span>'
+        f'<span class="peec-stat">\U0001f4c4 Total Unique Pages: <b>{agg["Unique Pages"].sum():,.0f}</b></span>'
+        f'</div>'
+    )
+    d_table.value = (
+        '<div class="peec-scroll">'
+        + agg.to_html(index=True, escape=False, max_cols=None, max_rows=None)
+        + "</div>"
+    )
 
 
 def _init_domain_filters():
@@ -133,21 +136,13 @@ def _on_d_filter(change):
 
 def _on_d_dl(b):
     if df_domain_result is None or df_domain_result.empty:
-        with d_output:
-            print("\u26a0\ufe0f Run report first.")
         return
     download_file(DOMAIN_CSV)
 
 
-d_page_type.observe(_on_d_filter, names="value")
-d_domain_type.observe(_on_d_filter, names="value")
-d_model.observe(_on_d_filter, names="value")
-d_prompt_search.observe(_on_d_filter, names="value")
-d_domain_search.observe(_on_d_filter, names="value")
 d_dl_btn.on_click(_on_d_dl)
 
 _init_domain_filters()
-_run_domain_report()
 
 display(
     widgets.HTML(
@@ -159,5 +154,14 @@ display(
     widgets.HBox([d_prompt_search, d_domain_search], layout=widgets.Layout(margin="0 0 8px 0")),
     d_dl_btn,
     d_stats,
-    d_output,
+    d_table,
 )
+
+_run_domain_report()
+
+# Attach filter observers AFTER initial run to prevent double-trigger
+d_page_type.observe(_on_d_filter, names="value")
+d_domain_type.observe(_on_d_filter, names="value")
+d_model.observe(_on_d_filter, names="value")
+d_prompt_search.observe(_on_d_filter, names="value")
+d_domain_search.observe(_on_d_filter, names="value")
