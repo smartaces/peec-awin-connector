@@ -42,7 +42,7 @@ gap_domain_type = widgets.Dropdown(
 )
 gap_domain_search = widgets.Text(
     description="Domain contains:",
-    placeholder="e.g. boots, lookfantastic",
+    placeholder="e.g. example, shop",
     style={"description_width": "120px"},
     layout=widgets.Layout(width="400px"),
 )

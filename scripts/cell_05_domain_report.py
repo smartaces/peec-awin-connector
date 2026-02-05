@@ -33,11 +33,11 @@ d_model = widgets.Dropdown(
     style={"description_width": "90px"}, layout=widgets.Layout(width="260px"),
 )
 d_prompt_search = widgets.Text(
-    description="Prompt contains:", placeholder="e.g. best moisturiser",
+    description="Prompt contains:", placeholder="e.g. best product",
     style={"description_width": "120px"}, layout=widgets.Layout(width="380px"),
 )
 d_domain_search = widgets.Text(
-    description="Domain contains:", placeholder="e.g. boots",
+    description="Domain contains:", placeholder="e.g. example",
     style={"description_width": "120px"}, layout=widgets.Layout(width="380px"),
 )
 

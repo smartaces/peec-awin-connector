@@ -33,15 +33,15 @@ u_model = widgets.Dropdown(
     style={"description_width": "90px"}, layout=widgets.Layout(width="260px"),
 )
 u_prompt_search = widgets.Text(
-    description="Prompt contains:", placeholder="e.g. best moisturiser",
+    description="Prompt contains:", placeholder="e.g. best product",
     style={"description_width": "120px"}, layout=widgets.Layout(width="380px"),
 )
 u_title_search = widgets.Text(
-    description="Title contains:", placeholder="e.g. skincare",
+    description="Title contains:", placeholder="e.g. review",
     style={"description_width": "120px"}, layout=widgets.Layout(width="380px"),
 )
 u_url_search = widgets.Text(
-    description="URL contains:", placeholder="e.g. boots.com",
+    description="URL contains:", placeholder="e.g. example.com",
     style={"description_width": "120px"}, layout=widgets.Layout(width="380px"),
 )
 
