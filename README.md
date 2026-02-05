@@ -1,4 +1,4 @@
-# PEEC + Awin Connector
+# PEEC + Awin Connector for AI Visibility and Affiliate Performance Insights
 
 An interactive Jupyter notebook that overlays AI citation visibility data from [PEEC AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
 
