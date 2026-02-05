@@ -1,4 +1,5 @@
 .env
+venv/
 peec_awin_workspace/
 __pycache__/
 *.pyc
