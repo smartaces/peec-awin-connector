@@ -1,4 +1,6 @@
-# PEEC.ai x Awin API Connector 
+<img src="awin_peec_logos.png" alt="PEEC x Awin" width="30%">
+
+# PEEC.ai x Awin API Connector
 
 An unofficial experimental connector to link AI Search Visibility and Affiliate Performance metrics :)
 
