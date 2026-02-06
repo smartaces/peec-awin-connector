@@ -8,7 +8,7 @@ import __main__
 import requests
 import pandas as pd
 import ipywidgets as widgets
-from IPython.display import display, HTML
+from IPython.display import display, HTML, Javascript
 
 # ── Prerequisites ────────────────────────────────────────────────
 for _r in ["df_domain_result", "df_awin_tx", "df_detail",
@@ -126,7 +126,7 @@ def _build_model_lookup(detail_df):
 
 
 # ── Widgets ──────────────────────────────────────────────────────
-enrich_table = widgets.HTML("")
+enrich_table = widgets.Output()
 enrich_status_msg = widgets.HTML("")
 enrich_stats = widgets.HTML("")
 enrich_dl_btn = widgets.Button(
@@ -149,12 +149,42 @@ enrich_exclude = widgets.Text(
     style={"description_width": "120px"},
     layout=widgets.Layout(width="600px"),
 )
+enrich_pub_name = widgets.Text(
+    description="Publisher Name:",
+    placeholder="e.g. digidip",
+    style={"description_width": "120px"},
+    layout=widgets.Layout(width="340px"),
+)
+enrich_pub_id = widgets.Text(
+    description="Publisher ID:",
+    placeholder="e.g. 154750",
+    style={"description_width": "100px"},
+    layout=widgets.Layout(width="260px"),
+)
+enrich_sort_by = widgets.Dropdown(
+    options=[
+        "Peec Citations", "Peec Domain", "Peec Unique Pages",
+        "Awin Transactions", "Awin Revenue", "Awin Commission", "Awin AOV",
+    ],
+    value="Peec Citations",
+    description="Sort by:",
+    style={"description_width": "60px"},
+    layout=widgets.Layout(width="240px"),
+)
+enrich_sort_dir = widgets.Dropdown(
+    options=["Descending", "Ascending"],
+    value="Descending",
+    description="Order:",
+    style={"description_width": "50px"},
+    layout=widgets.Layout(width="180px"),
+)
 
 
 def run_enrich(b=None):
     global df_enriched
     enrich_stats.value = ""
-    enrich_table.value = ""
+    with enrich_table:
+        enrich_table.clear_output(wait=True)
     enrich_status_msg.value = ""
 
     if df_domain_result is None or df_domain_result.empty:
@@ -231,13 +261,15 @@ def run_enrich(b=None):
         peec_hosts = sorted(peec["_peec_host"].unique())[:30]
         awin_hosts = sorted(awin_domains["_awin_host"].unique())[:30]
         enrich_status_msg.value = "\u26a0\ufe0f No domain matches found."
-        enrich_table.value = (
-            "<div><b>Peec normalised hosts (first 30):</b><br>"
-            + "<br>".join(f"&nbsp;&nbsp;{s}" for s in peec_hosts)
-            + "<br><br><b>Awin publisher normalised hosts (first 30):</b><br>"
-            + "<br>".join(f"&nbsp;&nbsp;{s}" for s in awin_hosts)
-            + "<br><br>Compare the lists above for near-misses.</div>"
-        )
+        with enrich_table:
+            enrich_table.clear_output(wait=True)
+            display(HTML(
+                "<div><b>Peec normalised hosts (first 30):</b><br>"
+                + "<br>".join(f"&nbsp;&nbsp;{s}" for s in peec_hosts)
+                + "<br><br><b>Awin publisher normalised hosts (first 30):</b><br>"
+                + "<br>".join(f"&nbsp;&nbsp;{s}" for s in awin_hosts)
+                + "<br><br>Compare the lists above for near-misses.</div>"
+            ))
         return
 
     merged = pd.DataFrame(matches)
@@ -290,6 +322,15 @@ def run_enrich(b=None):
         excluded_count = mask.sum()
         merged = merged[~mask].reset_index(drop=True)
 
+    # ── Step 5b: Publisher name / ID filters ────────────────────
+    pn_q = enrich_pub_name.value.strip().lower()
+    if pn_q:
+        merged = merged[merged["Publisher Name"].astype(str).str.lower().str.contains(pn_q, na=False)]
+
+    pi_q = enrich_pub_id.value.strip()
+    if pi_q:
+        merged = merged[merged["Publisher ID"].astype(str).str.contains(pi_q, na=False)]
+
     # ── Step 6: Final output ─────────────────────────────────────
     output_cols = [
         "Peec Domain",
@@ -310,7 +351,13 @@ def run_enrich(b=None):
     ]
     output_cols = [c for c in output_cols if c in merged.columns]
     merged = merged[output_cols]
-    merged = merged.sort_values("Peec Citations", ascending=False).reset_index(drop=True)
+
+    sort_col = enrich_sort_by.value
+    sort_asc = enrich_sort_dir.value == "Ascending"
+    if sort_col in merged.columns:
+        merged = merged.sort_values(sort_col, ascending=sort_asc).reset_index(drop=True)
+    else:
+        merged = merged.sort_values("Peec Citations", ascending=False).reset_index(drop=True)
 
     df_enriched = merged
     __main__.df_enriched = df_enriched
@@ -341,11 +388,16 @@ def run_enrich(b=None):
         f"CSV saved to output folder."
     )
 
-    enrich_table.value = (
-        '<div class="peec-scroll">'
-        + merged.to_html(index=True, escape=False, max_cols=None, max_rows=None)
-        + "</div>"
-    )
+    with enrich_table:
+        enrich_table.clear_output(wait=True)
+        display(HTML(
+            '<div class="peec-scroll">'
+            + merged.to_html(index=True, escape=False, max_cols=None, max_rows=None)
+            + "</div>"
+        ))
+        display(Javascript(
+            'document.querySelectorAll(".peec-scroll").forEach(function(el){el.scrollTop=0});'
+        ))
 
 
 def on_enrich_dl(b):
@@ -371,7 +423,15 @@ display(
     enrich_domain_type,
     widgets.HTML('<div style="font-size:11px;color:#888;margin:-4px 0 4px 0">'
                  'Ctrl+click to select types to include (none selected = show all)</div>'),
+    widgets.HBox(
+        [enrich_pub_name, enrich_pub_id],
+        layout=widgets.Layout(margin="0 0 4px 0"),
+    ),
     enrich_exclude,
+    widgets.HBox(
+        [enrich_sort_by, enrich_sort_dir],
+        layout=widgets.Layout(margin="4px 0 4px 0"),
+    ),
     widgets.HBox(
         [enrich_run_btn, enrich_dl_btn],
         layout=widgets.Layout(margin="8px 0 10px 0"),

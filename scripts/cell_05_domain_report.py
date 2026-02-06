@@ -4,7 +4,7 @@
 import __main__
 import pandas as pd
 import ipywidgets as widgets
-from IPython.display import display, HTML
+from IPython.display import display, HTML, Javascript
 
 # ── Prerequisites ────────────────────────────────────────────────
 for _r in ["df_detail", "_scroll_table", "download_file", "PATHS"]:
@@ -46,16 +46,19 @@ d_dl_btn = widgets.Button(
     layout=widgets.Layout(width="160px", height="36px"),
 )
 d_stats = widgets.HTML("")
-d_table = widgets.HTML("")
+d_table = widgets.Output()
 
 
 def _run_domain_report():
     global df_domain_result
     d_stats.value = ""
-    d_table.value = ""
+    with d_table:
+        d_table.clear_output(wait=True)
 
     if df_detail is None:
-        d_table.value = "\u26a0\ufe0f Pull data first."
+        with d_table:
+            d_table.clear_output(wait=True)
+            display(HTML("\u26a0\ufe0f Pull data first."))
         return
 
     df = df_detail.copy()
@@ -112,11 +115,16 @@ def _run_domain_report():
         f'<span class="peec-stat">\U0001f4c4 Total Unique Pages: <b>{agg["Unique Pages"].sum():,.0f}</b></span>'
         f'</div>'
     )
-    d_table.value = (
-        '<div class="peec-scroll">'
-        + agg.to_html(index=True, escape=False, max_cols=None, max_rows=None)
-        + "</div>"
-    )
+    with d_table:
+        d_table.clear_output(wait=True)
+        display(HTML(
+            '<div class="peec-scroll">'
+            + agg.to_html(index=True, escape=False, max_cols=None, max_rows=None)
+            + "</div>"
+        ))
+        display(Javascript(
+            'document.querySelectorAll(".peec-scroll").forEach(function(el){el.scrollTop=0});'
+        ))
 
 
 def _init_domain_filters():
