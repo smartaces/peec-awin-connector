@@ -6,7 +6,15 @@ An unofficial experimental connector to link AI Search Visibility and Affiliate 
 
 This interactive Jupyter notebook that overlays AI citation visibility data from [Peec AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
 
-> **Disclaimer**: This is **not** an official connector produced by Peec AI or Awin. It is a community project sharing example code of how affiliate and AI visibility platform data can be combined to yield insights. Use at your own discretion. The authors accept no liability for any issues arising from its use.
+> **Disclaimer**: This is **not** an official connector produced by Peec AI or Awin. It is a community project sharing example code of how affiliate and AI visibility platform data can be combined to yield insights. Use the contents of the repository at your own discretion. The authors accept no liability for any issues arising from its use.
+
+## Run The Cookbook in Google Colab:
+
+For the easiest and quickest setup, run the cookbook in Google Colab: 
+
+https://colab.research.google.com/github/smartaces/peec-awin-connector/blob/main/Peec_AI_x_Awin_Cookbook_Colab.ipynb
+
+Alternatively full setup instructions to run on your local machine are provided below.
 
 ## What It Does
 
