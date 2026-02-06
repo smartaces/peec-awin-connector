@@ -1,16 +1,16 @@
-<img src="awin_peec_logos.png" alt="PEEC x Awin" width="40%">
+<img src="awin_peec_logos.png" alt="Peec AI x Awin" width="40%">
 
 # The Unofficial AI Visibility and Affiliate Performance Cookbook
 
 An unofficial experimental connector to link AI Search Visibility and Affiliate Performance metrics :)
 
-This interactive Jupyter notebook that overlays AI citation visibility data from [PEEC AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
+This interactive Jupyter notebook that overlays AI citation visibility data from [Peec AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
 
-> **Disclaimer**: This is **not** an official connector produced by PEEC AI or Awin. It is a community project sharing example code of how affiliate and AI visibility platform data can be combined to yield insights. Use at your own discretion. The authors accept no liability for any issues arising from its use.
+> **Disclaimer**: This is **not** an official connector produced by Peec AI or Awin. It is a community project sharing example code of how affiliate and AI visibility platform data can be combined to yield insights. Use at your own discretion. The authors accept no liability for any issues arising from its use.
 
 ## What It Does
 
-- **Pulls AI citation data** from the PEEC AI API — which domains and URLs are being cited by AI models (ChatGPT, Gemini, Perplexity, Claude, etc.)
+- **Pulls AI citation data** from the Peec AI API — which domains and URLs are being cited by AI models (ChatGPT, Gemini, Perplexity, Claude, etc.)
 - **Pulls affiliate transaction data** from the Awin API — which publishers are driving sales
 - **Matches domains** between the two datasets using normalised hostname matching
 - **Produces an enriched report** showing citation metrics alongside transaction revenue for matched publishers
@@ -18,7 +18,7 @@ This interactive Jupyter notebook that overlays AI citation visibility data from
 
 *Example output — enriched report combining AI citation data with affiliate transaction metrics:*
 
-![PEEC x Awin Insights Dashboard](peec_awin_insights_dashboard.png)
+![Peec AI x Awin Insights Dashboard](peec_awin_insights_dashboard.png)
 
 ## Reports
 
@@ -32,7 +32,7 @@ This interactive Jupyter notebook that overlays AI citation visibility data from
 
 ## Prerequisites
 
-- A [PEEC AI](https://peec.ai) account and API key
+- A [Peec AI](https://peec.ai) account and API key
 - An [Awin](https://awin.com) advertiser account and API token
 - Python 3.8+ with Jupyter support
 
@@ -42,7 +42,7 @@ This interactive Jupyter notebook that overlays AI citation visibility data from
 
 1. Open `PEEC_Awin_Connector.ipynb` in Google Colab
 2. Add your API keys as Colab secrets:
-   - `PEEC_API_KEY` — your PEEC AI API key
+   - `PEEC_API_KEY` — your Peec AI API key
    - `AWAPI` — your Awin API token
 3. Run cells in order — the bootstrap cell downloads scripts automatically from this repo
 
@@ -76,8 +76,8 @@ scripts/
 ├── cell_00_pip_installs.py        # Dependency installation
 ├── cell_01_session_config.py      # API keys, project, dates, advertiser ID
 ├── cell_02_css_styling.py         # Shared CSS for report styling
-├── cell_03_peec_client.py         # PEEC API client + helper functions
-├── cell_04_peec_data_pull.py      # Pull citation data from PEEC
+├── cell_03_peec_client.py         # Peec AI API client + helper functions
+├── cell_04_peec_data_pull.py      # Pull citation data from Peec AI
 ├── cell_05_domain_report.py       # Domain-level aggregation
 ├── cell_06_url_report.py          # URL/page-level aggregation
 ├── cell_07_awin_transactions.py   # Awin transaction fetch (auto-chunked)
@@ -89,7 +89,7 @@ Scripts share state via `__main__` globals and can be updated independently on G
 
 ## API Notes
 
-- **PEEC AI**: Uses `X-API-Key` header authentication against `https://api.peec.ai/customer/v1`
+- **Peec AI**: Uses `X-API-Key` header authentication against `https://api.peec.ai/customer/v1`
 - **Awin**: Uses `accessToken` query parameter. The transaction endpoint has a 31-day maximum window per request — the connector handles chunking automatically for longer date ranges
 
 ## Connect
@@ -98,4 +98,4 @@ Built by [James Bentley](https://www.linkedin.com/in/jamesbentleyai/) — feel f
 
 ## License
 
-This project is provided as-is for educational and community use. It is not affiliated with, endorsed by, or supported by PEEC AI or Awin.
+This project is provided as-is for educational and community use. It is not affiliated with, endorsed by, or supported by Peec AI or Awin.
