@@ -1,4 +1,4 @@
-<img src="awin_peec_logos.png" alt="PEEC x Awin" width="30%">
+<img src="awin_peec_logos.png" alt="PEEC x Awin" width="40%">
 
 # The Unofficial AI Visibility and Affiliate Performance Cookbook
 
