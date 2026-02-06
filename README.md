@@ -1,10 +1,10 @@
 <img src="awin_peec_logos.png" alt="Peec AI x Awin" width="40%">
 
-##The Peec AI Visibility and Awin Affiliate Performance Cookbook
+## The Peec AI Visibility and Awin Affiliate Performance Cookbook
 
-An unofficial experimental connector to link AI Search Visibility and Affiliate Performance metrics :)
+This is an unofficial experimental connector to link AI Search Visibility and Affiliate Performance metrics :)
 
-This interactive Jupyter notebook that overlays AI citation visibility data from [Peec AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
+This interactive Jupyter notebook overlays AI citation visibility data from [Peec AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
 
 > **Disclaimer**: This is **not** an official connector produced by Peec AI or Awin. It is a community project sharing example code of how affiliate and AI visibility platform data can be combined to yield insights. Use the contents of the repository at your own discretion. The authors accept no liability for any issues arising from its use.
 
