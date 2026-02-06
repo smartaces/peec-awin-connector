@@ -169,9 +169,8 @@ def run_enrich(b=None):
 
     awin_domains = (
         df_awin_tx[df_awin_tx["Publisher Domain"] != ""]
-        .groupby("Publisher Domain", as_index=False)
+        .groupby(["Publisher Domain", "Publisher ID"], as_index=False)
         .agg(
-            Publisher_ID=("Publisher ID", "first"),
             Publisher_Name=("Publisher Name", "first"),
             Awin_Transactions=("Transaction ID", "count"),
             Awin_Revenue=("Sale Amount", "sum"),
@@ -243,6 +242,10 @@ def run_enrich(b=None):
 
     merged = pd.DataFrame(matches)
 
+    # ── Add count of Awin publisher IDs per PEEC domain ──────────
+    pub_counts = merged.groupby("Peec Domain")["Publisher ID"].nunique().rename("Awin IDs on Domain")
+    merged = merged.merge(pub_counts, on="Peec Domain", how="left")
+
     # ── Populate domain type filter ──────────────────────────────
     available_types = sorted(merged["Domain Type"].dropna().unique().tolist())
     enrich_domain_type.options = ["All"] + available_types
@@ -296,6 +299,7 @@ def run_enrich(b=None):
         "Peec Unique Pages",
         "Peec Models Present",
         "Models",
+        "Awin IDs on Domain",
         "Awin Domain",
         "Publisher ID",
         "Publisher Name",
