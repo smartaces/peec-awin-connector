@@ -125,7 +125,8 @@ def _extract_domain(url):
     if not url.startswith("http"):
         url = "https://" + url
     try:
-        return urlparse(url).netloc.lower().lstrip("www.")
+        host = urlparse(url).netloc.lower()
+        return re.sub(r"^www\.", "", host)
     except Exception:
         return url.split("/")[0].lower()
 

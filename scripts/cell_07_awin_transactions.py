@@ -2,6 +2,7 @@
 # Uses session dates and advertiser ID. Produces: df_awin_tx
 
 import os
+import re
 import time
 import __main__
 from datetime import datetime, timedelta
@@ -133,7 +134,8 @@ def process_awin_transactions(raw):
         if not str(url).startswith("http"):
             url = "https://" + str(url)
         try:
-            return urlparse(url).netloc.lower().lstrip("www.")
+            host = urlparse(url).netloc.lower()
+            return re.sub(r"^www\.", "", host)
         except Exception:
             return ""
 
