@@ -34,6 +34,7 @@ SESSION_END_DATE = __main__.SESSION_END_DATE
 ENRICHED_CSV = str(PATHS["output"] / "peec_awin_enriched.csv")
 PUB_REPORT_CSV = str(PATHS["output"] / "awin_publisher_report.csv")
 df_enriched = None
+_enriched_cache = None  # holds pre-filter merged DataFrame after build phase
 
 
 # ── Awin publisher report (for publisher names) ──────────────────
@@ -184,7 +185,8 @@ enrich_sort_dir = widgets.Dropdown(
 
 
 def run_enrich(b=None):
-    global df_enriched
+    """Build phase: aggregate, match, fetch publisher names, cache result."""
+    global _enriched_cache
     enrich_stats.value = ""
     with enrich_table:
         enrich_table.clear_output(wait=True)
@@ -264,6 +266,7 @@ def run_enrich(b=None):
         peec_hosts = sorted(peec["_peec_host"].unique())[:30]
         awin_hosts = sorted(awin_domains["_awin_host"].unique())[:30]
         enrich_status_msg.value = "\u26a0\ufe0f No domain matches found."
+        _enriched_cache = None
         with enrich_table:
             enrich_table.clear_output(wait=True)
             display(HTML(
@@ -313,11 +316,29 @@ def run_enrich(b=None):
     model_lookup = _build_model_lookup(df_detail)
     merged["Models"] = merged["Peec Domain"].map(model_lookup).fillna("")
 
-    # ── Step 5: Apply filters ────────────────────────────────────
+    # ── Cache the full (unfiltered) result ────────────────────────
+    _enriched_cache = merged.copy()
+
+    # ── Now apply filters and render ──────────────────────────────
+    _apply_enrich_filters()
+
+
+def _apply_enrich_filters(change=None):
+    """Filter/display phase: apply filters, sort, render stats + table.
+    Called after build, and reactively when any filter/sort widget changes."""
+    global df_enriched
+
+    if _enriched_cache is None:
+        return
+
+    merged = _enriched_cache.copy()
+
+    # ── Domain type filter ────────────────────────────────────────
     selected_types = list(enrich_domain_type.value)
     if selected_types and "All" not in selected_types:
         merged = merged[merged["Domain Type"].isin(selected_types)]
 
+    # ── Exclude keywords filter ───────────────────────────────────
     exclude_keywords = _parse_exclude_keywords(enrich_exclude.value)
     excluded_count = 0
     if exclude_keywords:
@@ -325,7 +346,7 @@ def run_enrich(b=None):
         excluded_count = mask.sum()
         merged = merged[~mask].reset_index(drop=True)
 
-    # ── Step 5b: Publisher name / ID filters ────────────────────
+    # ── Publisher name / ID filters ───────────────────────────────
     pn_q = enrich_pub_name.value.strip().lower()
     if pn_q:
         merged = merged[merged["Publisher Name"].astype(str).str.lower().str.contains(pn_q, na=False)]
@@ -334,7 +355,7 @@ def run_enrich(b=None):
     if pi_q:
         merged = merged[merged["Publisher ID"].astype(str).str.contains(pi_q, na=False)]
 
-    # ── Step 6: Final output ─────────────────────────────────────
+    # ── Select and order output columns ───────────────────────────
     output_cols = [
         "Peec Domain",
         "Domain Type",
@@ -355,6 +376,7 @@ def run_enrich(b=None):
     output_cols = [c for c in output_cols if c in merged.columns]
     merged = merged[output_cols]
 
+    # ── Sort ──────────────────────────────────────────────────────
     sort_col = enrich_sort_by.value
     sort_asc = enrich_sort_dir.value == "Ascending"
     if sort_col in merged.columns:
@@ -440,3 +462,11 @@ display(
     enrich_status_msg,
     enrich_table,
 )
+
+# Attach filter/sort observers for reactive updates (after display to avoid trigger during init)
+enrich_domain_type.observe(_apply_enrich_filters, names="value")
+enrich_exclude.observe(_apply_enrich_filters, names="value")
+enrich_pub_name.observe(_apply_enrich_filters, names="value")
+enrich_pub_id.observe(_apply_enrich_filters, names="value")
+enrich_sort_by.observe(_apply_enrich_filters, names="value")
+enrich_sort_dir.observe(_apply_enrich_filters, names="value")
