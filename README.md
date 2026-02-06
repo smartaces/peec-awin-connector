@@ -1,8 +1,8 @@
 # PEEC.ai x Awin API Connector 
 
-For AI Search Visibility and Affiliate Performance Insights :)
+An unofficial experimental connector to link AI Search Visibility and Affiliate Performance metrics :)
 
-An interactive Jupyter notebook that overlays AI citation visibility data from [PEEC AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
+This interactive Jupyter notebook that overlays AI citation visibility data from [PEEC AI](https://peec.ai) with affiliate transaction data from [Awin](https://awin.com), helping you understand which publisher domains are both cited by AI models and driving affiliate revenue.
 
 > **Disclaimer**: This is **not** an official connector produced by PEEC AI or Awin. It is a community project sharing example code of how affiliate and AI visibility platform data can be combined to yield insights. Use at your own discretion. The authors accept no liability for any issues arising from its use.
 
@@ -13,6 +13,10 @@ An interactive Jupyter notebook that overlays AI citation visibility data from [
 - **Matches domains** between the two datasets using normalised hostname matching
 - **Produces an enriched report** showing citation metrics alongside transaction revenue for matched publishers
 - **Identifies gaps** — domains cited by AI models where you have no Awin publisher relationship (potential recruitment targets)
+
+*Example output — enriched report combining AI citation data with affiliate transaction metrics:*
+
+![PEEC x Awin Insights Dashboard](peec_awin_insights_dashboard.png)
 
 ## Reports
 
@@ -85,6 +89,10 @@ Scripts share state via `__main__` globals and can be updated independently on G
 
 - **PEEC AI**: Uses `X-API-Key` header authentication against `https://api.peec.ai/customer/v1`
 - **Awin**: Uses `accessToken` query parameter. The transaction endpoint has a 31-day maximum window per request — the connector handles chunking automatically for longer date ranges
+
+## Connect
+
+Built by [James Bentley](https://www.linkedin.com/in/jamesbentleyai/) — feel free to connect on LinkedIn.
 
 ## License
 
