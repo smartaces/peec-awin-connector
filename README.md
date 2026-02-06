@@ -40,7 +40,7 @@ This interactive Jupyter notebook that overlays AI citation visibility data from
 
 ### Google Colab
 
-1. Open `PEEC_Awin_Connector.ipynb` in Google Colab
+1. Open `Peec_Awin_Connector.ipynb` in Google Colab
 2. Add your API keys as Colab secrets:
    - `PEEC_API_KEY` — your Peec AI API key
    - `AWAPI` — your Awin API token
@@ -65,7 +65,7 @@ This interactive Jupyter notebook that overlays AI citation visibility data from
    AWAPI=your_awin_api_token_here
    ```
 
-4. Open `PEEC_Awin_Connector.ipynb` and run cells in order
+4. Open `Peec_Awin_Connector.ipynb` and run cells in order
 
 ## Architecture
 
