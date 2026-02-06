@@ -1,6 +1,6 @@
 <img src="awin_peec_logos.png" alt="Peec AI x Awin" width="40%">
 
-## The Peec AI Visibility and Awin Affiliate Performance Cookbook
+## The Peec AI Search Visibility and Awin Affiliate Performance Cookbook
 
 This is an unofficial experimental connector to link AI Search Visibility and Affiliate Performance metrics :)
 
