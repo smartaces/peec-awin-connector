@@ -4,7 +4,7 @@
 import __main__
 import pandas as pd
 import ipywidgets as widgets
-from IPython.display import display, HTML, Javascript
+from IPython.display import display, HTML
 
 # ── Prerequisites ────────────────────────────────────────────────
 for _r in ["df_detail", "_scroll_table", "download_file", "PATHS"]:
@@ -50,7 +50,10 @@ u_dl_btn = widgets.Button(
     layout=widgets.Layout(width="160px", height="36px"),
 )
 u_stats = widgets.HTML("")
-u_table = widgets.Output()
+u_table = widgets.Output(layout=widgets.Layout(
+    max_height='600px', overflow_y='auto', overflow_x='auto',
+    border='1px solid #e0e0e0',
+))
 
 
 def _run_url_report():
@@ -148,12 +151,9 @@ def _run_url_report():
     with u_table:
         u_table.clear_output(wait=True)
         display(HTML(
-            '<div class="peec-scroll">'
+            '<div class="peec-scroll" style="max-height:none;overflow:visible;">'
             + display_df.to_html(index=True, escape=False, max_cols=None, max_rows=None)
             + "</div>"
-        ))
-        display(Javascript(
-            'document.querySelectorAll(".peec-scroll").forEach(function(el){el.scrollTop=0});'
         ))
 
 

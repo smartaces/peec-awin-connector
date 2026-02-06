@@ -8,7 +8,7 @@ import __main__
 import requests
 import pandas as pd
 import ipywidgets as widgets
-from IPython.display import display, HTML, Javascript
+from IPython.display import display, HTML
 
 # ── Prerequisites ────────────────────────────────────────────────
 for _r in ["df_domain_result", "df_awin_tx", "df_detail",
@@ -126,7 +126,10 @@ def _build_model_lookup(detail_df):
 
 
 # ── Widgets ──────────────────────────────────────────────────────
-enrich_table = widgets.Output()
+enrich_table = widgets.Output(layout=widgets.Layout(
+    max_height='600px', overflow_y='auto', overflow_x='auto',
+    border='1px solid #e0e0e0',
+))
 enrich_status_msg = widgets.HTML("")
 enrich_stats = widgets.HTML("")
 enrich_dl_btn = widgets.Button(
@@ -151,13 +154,13 @@ enrich_exclude = widgets.Text(
 )
 enrich_pub_name = widgets.Text(
     description="Publisher Name:",
-    placeholder="e.g. digidip",
+    placeholder="e.g. Joe Food Blog",
     style={"description_width": "120px"},
     layout=widgets.Layout(width="340px"),
 )
 enrich_pub_id = widgets.Text(
     description="Publisher ID:",
-    placeholder="e.g. 154750",
+    placeholder="e.g. 45798",
     style={"description_width": "100px"},
     layout=widgets.Layout(width="260px"),
 )
@@ -391,12 +394,9 @@ def run_enrich(b=None):
     with enrich_table:
         enrich_table.clear_output(wait=True)
         display(HTML(
-            '<div class="peec-scroll">'
+            '<div class="peec-scroll" style="max-height:none;overflow:visible;">'
             + merged.to_html(index=True, escape=False, max_cols=None, max_rows=None)
             + "</div>"
-        ))
-        display(Javascript(
-            'document.querySelectorAll(".peec-scroll").forEach(function(el){el.scrollTop=0});'
         ))
 
 

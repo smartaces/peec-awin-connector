@@ -5,7 +5,7 @@
 import __main__
 import pandas as pd
 import ipywidgets as widgets
-from IPython.display import display, HTML, Javascript
+from IPython.display import display, HTML
 
 # ── Prerequisites ────────────────────────────────────────────────
 for _r in ["df_detail", "df_domain_result", "df_enriched",
@@ -24,7 +24,10 @@ GAP_CSV = str(PATHS["output"] / "peec_awin_gap_analysis.csv")
 df_gap = None
 
 # ── Widgets ──────────────────────────────────────────────────────
-gap_table = widgets.Output()
+gap_table = widgets.Output(layout=widgets.Layout(
+    max_height='600px', overflow_y='auto', overflow_x='auto',
+    border='1px solid #e0e0e0',
+))
 gap_status_msg = widgets.HTML("")
 gap_stats = widgets.HTML("")
 gap_dl_btn = widgets.Button(
@@ -236,12 +239,9 @@ def run_gap(b=None):
     with gap_table:
         gap_table.clear_output(wait=True)
         display(HTML(
-            '<div class="peec-scroll">'
+            '<div class="peec-scroll" style="max-height:none;overflow:visible;">'
             + display_df.to_html(index=True, escape=False, max_cols=None, max_rows=None)
             + "</div>"
-        ))
-        display(Javascript(
-            'document.querySelectorAll(".peec-scroll").forEach(function(el){el.scrollTop=0});'
         ))
 
 
